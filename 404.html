@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>跳转中…</title>
+    <script>
+        // 任意路径都会自动跳到首页内容
+        location.replace(new URL('./', location.href).href);
+    </script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #f3e5f5, #e1bee7);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            color: #6a1b9a;
+        }
+        a {
+            color: #7b1fa2;
+        }
+    </style>
+</head>
+<body>
+    <a href="./">如果页面没有自动跳转，请点击这里 ✨</a>
+</body>
+</html>

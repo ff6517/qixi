@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎋 七夕 · 星河予你</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #f3e5f5 0%, #e1bee7 100%);
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        #heart-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .card {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 48px 40px 42px;
+            box-shadow: 0 30px 60px rgba(156, 39, 176, 0.20), 0 10px 30px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+        .card::before {
+            content: '🎋';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            filter: drop-shadow(0 8px 12px rgba(156, 39, 176, 0.3));
+            animation: floatHeart 2.4s ease-in-out infinite;
+        }
+        @keyframes floatHeart {
+            0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+            50% { transform: translateX(-50%) translateY(-12px) scale(1.08); }
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ab47bc, #8e24aa);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            box-shadow: 0 16px 32px rgba(156, 39, 176, 0.25);
+            border: 4px solid rgba(255, 255, 255, 0.6);
+            transition: transform 0.3s ease;
+        }
+        .avatar:hover {
+            transform: scale(1.04) rotate(-4deg);
+        }
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .sub-title {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #6a1b9a;
+            opacity: 0.8;
+            margin-bottom: 24px;
+            letter-spacing: 4px;
+        }
+        .letter {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
+            padding: 28px 24px;
+            margin: 12px 0 28px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.6);
+            text-align: left;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            color: #4a1a2c;
+        }
+        .letter p {
+            margin-bottom: 14px;
+        }
+        .letter p:last-child {
+            margin-bottom: 0;
+        }
+        .letter .signature {
+            text-align: right;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #6a1b9a;
+            margin-top: 10px;
+        }
+        .letter .signature span {
+            display: inline-block;
+            animation: pulseText 2s ease-in-out infinite;
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 10px;
+        }
+        .btn {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 14px 42px;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-yes {
+            background: linear-gradient(135deg, #ab47bc, #7b1fa2);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(156, 39, 176, 0.35);
+        }
+        .btn-yes:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 16px 36px rgba(156, 39, 176, 0.45);
+        }
+        .btn-yes:active {
+            transform: scale(0.96);
+        }
+        .btn-no {
+            background: rgba(255, 255, 255, 0.7);
+            color: #6d4c5a;
+            border: 1.5px solid rgba(156, 39, 176, 0.2);
+            backdrop-filter: blur(4px);
+        }
+        .btn-no:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+            border-color: #ab47bc;
+            box-shadow: 0 10px 24px rgba(156, 39, 176, 0.15);
+        }
+        .btn-no:active {
+            transform: scale(0.94);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.4s ease;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            max-width: 520px;
+            width: 100%;
+            border-radius: 48px;
+            padding: 44px 36px 40px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+            transform: scale(0.92) translateY(30px);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+        .modal .big-emoji {
+            font-size: 72px;
+            display: block;
+            margin-bottom: 8px;
+            animation: floatHeart 2.2s ease-in-out infinite;
+        }
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 8px 0 12px;
+        }
+        .modal p {
+            color: #4a1a2c;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        .modal .btn-close {
+            background: linear-gradient(135deg, #ab47bc, #7b1fa2);
+            color: #fff;
+            border: none;
+            padding: 12px 44px;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Quicksand', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 24px rgba(156, 39, 176, 0.3);
+        }
+        .modal .btn-close:hover {
+            transform: scale(1.04);
+            box-shadow: 0 16px 36px rgba(156, 39, 176, 0.4);
+        }
+        .btn-no--run {
+            transition: all 0.15s ease !important;
+        }
+        @media (max-width: 500px) {
+            .card { padding: 32px 20px 30px; border-radius: 32px; }
+            .title { font-size: 2.1rem; }
+            .sub-title { font-size: 0.95rem; letter-spacing: 2px; }
+            .letter { padding: 20px 16px; font-size: 0.95rem; }
+            .btn { font-size: 1rem; padding: 12px 28px; min-width: 120px; }
+            .avatar { width: 76px; height: 76px; font-size: 36px; }
+            .modal { padding: 32px 20px 28px; }
+            .modal h2 { font-size: 1.8rem; }
+        }
+        @media (max-width: 380px) {
+            .actions { flex-direction: column; align-items: center; }
+            .btn { width: 80%; justify-content: center; }
+        }
+        .sparkle {
+            display: inline-block;
+            animation: sparkle 1.6s ease-in-out infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="heart-canvas"></canvas>
+    <div class="card" role="main">
+        <div class="avatar" aria-hidden="true">🌌</div>
+        <h1 class="title">七夕 · 星河予你</h1>
+        <p class="sub-title">✨ 鹊桥相会，唯你而已 ✨</p>
+        <div class="letter">
+            <p>亲爱的 <strong>小星星</strong> ：</p>
+            <p>今夜银河倾泻，喜鹊成桥，而我的世界里，所有的星光都落在了你的眼眸里。</p>
+            <p>我想和你一起仰望牛郎织女的传说，也想和你一起，把每一个平凡的日子，都过成诗。</p>
+            <p>从朝霞到日暮，从春夏到秋冬，只要是你，我便愿意奔赴。</p>
+            <p>如果说相遇是命中注定，那么相守，便是我心甘情愿的选择。</p>
+            <p class="signature">—— 跨越星海，奔你而来 <span>💫</span></p>
+        </div>
+        <div class="actions">
+            <button class="btn btn-yes" id="btnYes">🌹 我愿意</button>
+            <button class="btn btn-no" id="btnNo">😳 再想想…</button>
+        </div>
+        <p style="margin-top: 22px; font-size: 0.85rem; color: #9a6b7c; opacity: 0.7; letter-spacing: 1px;">✦ 点击「我愿意」有惊喜 ✦</p>
+    </div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <span class="big-emoji">🥰</span>
+            <h2>我就知道你会答应！</h2>
+            <p>从今以后，<br />你的喜乐哀愁，都是我最在乎的风景。<br />七夕快乐，我的唯一！<br /><span style="display:inline-block; margin-top:6px; font-size:1.6rem;">💞 🌙 🎋</span></p>
+            <button class="btn-close" id="modalClose">🌹 紧紧抱住你</button>
+        </div>
+    </div>
+    <script>
+        // 爱心粒子动画（七夕版，紫色调）
+        (function hearts() {
+            const canvas = document.getElementById('heart-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+            const hearts = [];
+            const MAX_HEARTS = 55;
+            let frame = 0;
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const SYMBOLS = ['💜', '🌙', '✨', '🎋', '🌌', '💫', '❤️', '🌸', '🌟'];
+
+            class Heart {
+                constructor() {
+                    this.reset(true);
+                }
+                reset(init) {
+                    this.x = Math.random() * w;
+                    this.y = init ? Math.random() * h : h + 20;
+                    this.size = Math.random() * 18 + 10;
+                    this.speed = Math.random() * 0.7 + 0.3;
+                    this.opacity = Math.random() * 0.5 + 0.35;
+                    this.symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                    this.swing = Math.random() * 0.02 + 0.005;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.rotation = Math.random() * 360;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.6;
+                }
+                update() {
+                    this.y -= this.speed;
+                    this.x += Math.sin(frame * this.swing + this.phase) * 0.5;
+                    this.rotation += this.rotSpeed;
+                    if (this.y < -30) {
+                        this.reset(false);
+                        this.y = h + 20;
+                    }
+                }
+                draw(ctx) {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.font = `${this.size}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate((this.rotation * Math.PI) / 180);
+                    ctx.fillText(this.symbol, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < MAX_HEARTS; i++) {
+                hearts.push(new Heart());
+            }
+
+            function animate() {
+                frame++;
+                ctx.clearRect(0, 0, w, h);
+                for (const h of hearts) {
+                    h.update();
+                    h.draw(ctx);
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // 交互逻辑（保持一致）
+        const btnYes = document.getElementById('btnYes');
+        const btnNo = document.getElementById('btnNo');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        btnYes.addEventListener('click', () => {
+            modalOverlay.classList.add('show');
+            if (navigator.vibrate) navigator.vibrate(20);
+        });
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.classList.remove('show');
+        });
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+        });
+
+        let noClicks = 0;
+        const noTexts = ['😳 再想想…', '🥺 你忍心吗', '💔 不要拒绝我', '😭 再给我一次机会', '❤️‍🔥 我不信！', '🥰 你逃不掉的', '💕 快答应吧'];
+
+        btnNo.addEventListener('click', function(e) {
+            noClicks++;
+            const idx = Math.min(noClicks - 1, noTexts.length - 1);
+            this.textContent = noTexts[idx];
+
+            const card = this.closest('.card');
+            const cardRect = card.getBoundingClientRect();
+            const btnRect = this.getBoundingClientRect();
+            const pad = 16;
+            const maxX = cardRect.width - btnRect.width - pad;
+            const maxY = cardRect.height - btnRect.height - pad;
+
+            const currentX = parseFloat(this.style.transform?.match(/translate\(([^,]+)px,\s*([^)]+)px\)/)?.[1]) || 0;
+            const currentY = parseFloat(this.style.transform?.match(/translate\(([^,]+)px,\s*([^)]+)px\)/)?.[2]) || 0;
+
+            let newX, newY;
+            let attempts = 0;
+            do {
+                newX = Math.random() * maxX - maxX / 2;
+                newY = Math.random() * maxY - maxY / 2;
+                attempts++;
+            } while (
+                (Math.abs(newX - currentX) < 40 && Math.abs(newY - currentY) < 40) &&
+                attempts < 20
+            );
+
+            newX = Math.max(-maxX / 2, Math.min(maxX / 2, newX));
+            newY = Math.max(-maxY / 2, Math.min(maxY / 2, newY));
+
+            this.style.transform = `translate(${newX}px, ${newY}px)`;
+            this.classList.add('btn-no--run');
+
+            if (noClicks >= 8) {
+                this.textContent = '🥰 我答应你！';
+                this.style.transform = 'translate(0, 0)';
+                this.style.background = 'linear-gradient(135deg, #ab47bc, #7b1fa2)';
+                this.style.color = '#fff';
+                this.style.border = 'none';
+                btnYes.click();
+                noClicks = 0;
+                setTimeout(() => {
+                    this.textContent = '😳 再想想…';
+                    this.style.background = 'rgba(255,255,255,0.7)';
+                    this.style.color = '#6d4c5a';
+                    this.style.border = '1.5px solid rgba(156,39,176,0.2)';
+                }, 1200);
+            }
+
+            if (navigator.vibrate) navigator.vibrate(8);
+        });
+
+        btnNo.addEventListener('mouseenter', function() {
+            if (noClicks < 6) {
+                const angle = (Math.random() - 0.5) * 8;
+                this.style.transform += ` rotate(${angle}deg)`;
+                setTimeout(() => {
+                    this.style.transform = this.style.transform.replace(/rotate\([^)]*\)/, '');
+                }, 200);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            btnNo.style.transform = 'translate(0, 0)';
+            btnNo.classList.remove('btn-no--run');
+        });
+
+        console.log('🎋 七夕快乐！愿有情人终成眷属 🎋');
+    </script>
+</body>
+</html>

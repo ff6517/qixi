@@ -293,7 +293,7 @@
         <h1 class="title">七夕 · 星河予你</h1>
         <p class="sub-title">✨ 鹊桥相会，唯你而已 ✨</p>
         <div class="letter">
-            <p>亲爱的 <strong>张勤</strong> ：</p>
+            <p>亲爱的 <strong id="recipient-name">张勤</strong> ：</p>
             <p>今夜银河倾泻，喜鹊成桥，而我的世界里，所有的星光都落在了你的眼眸里。</p>
             <p>我想和你一起仰望牛郎织女的传说，也想和你一起，把每一个平凡的日子，都过成诗。</p>
             <p>从朝霞到日暮，从春夏到秋冬，只要是你，我便愿意奔赴。</p>
@@ -305,6 +305,7 @@
             <button class="btn btn-no" id="btnNo">😳 再想想…</button>
         </div>
         <p style="margin-top: 22px; font-size: 0.85rem; color: #9a6b7c; opacity: 0.7; letter-spacing: 1px;">✦ 点击「我愿意」有惊喜 ✦</p>
+        <p style="margin-top: 14px; font-size: 0.78rem; color: #b38aa0; opacity: 0.75;"><a href="edit.html" style="color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor;">✎ 换个称呼</a></p>
     </div>
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
@@ -314,6 +315,24 @@
             <button class="btn-close" id="modalClose">🌹 紧紧抱住你</button>
         </div>
     </div>
+    <script>
+        // 称呼：优先读取网址里的 ?name=，其次本机保存的默认值，最后用页面默认
+        (function () {
+            const DEFAULT_NAME = '张勤';
+            const el = document.getElementById('recipient-name');
+            if (!el) return;
+            let name = null;
+            try {
+                const q = new URLSearchParams(location.search).get('name');
+                if (q) name = q.trim();
+            } catch (e) {}
+            if (!name) {
+                try { name = localStorage.getItem('qixi_name') || null; } catch (e) {}
+            }
+            if (!name) name = DEFAULT_NAME;
+            el.textContent = name;
+        })();
+    </script>
     <script>
         // 爱心粒子动画（七夕版，紫色调）
         (function hearts() {

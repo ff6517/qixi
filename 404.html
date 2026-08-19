@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>跳转中…</title>
     <script>
-        // 任意路径都会自动跳到首页内容
-        location.replace(new URL('./', location.href).href);
+        // 任意路径都会自动跳到首页内容；路径里的第一个名字会作为称呼
+        (function () {
+            async function jump() {
+                const segments = location.pathname.split('/').filter(Boolean);
+                let base = '/';
+                let baseCount = 0;
+                for (let i = segments.length; i >= 0; i--) {
+                    const candidate = '/' + segments.slice(0, i).join('/') + '/';
+                    try {
+                        const r = await fetch(new URL(candidate + 'index.html', location.origin), { cache: 'no-store' });
+                        if (r.ok) { base = candidate; baseCount = i; break; }
+                    } catch (e) { /* 继续向上找网站根目录 */ }
+                }
+                const extra = segments.slice(baseCount);
+                let name = null;
+                try { name = decodeURIComponent(extra[0] || '').trim(); } catch (e) {}
+                const target = new URL(base, location.origin);
+                if (name) target.searchParams.set('name', name);
+                location.replace(target.href);
+            }
+            jump();
+        })();
     </script>
     <style>
         body {

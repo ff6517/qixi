@@ -221,14 +221,14 @@
         .modal-overlay.show .modal {
             transform: scale(1) translateY(0);
         }
-        .modal-overlay .fireworks-canvas {
-            position: absolute;
+        #fireworks-canvas {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 0;
+            z-index: 1000;
         }
         .modal-overlay .modal {
             position: relative;
@@ -321,7 +321,6 @@
         <p style="margin-top: 14px; font-size: 0.78rem; color: #b38aa0; opacity: 0.75;"><a href="edit.html" style="color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor;">✎ 换个称呼</a></p>
     </div>
     <div class="modal-overlay" id="modalOverlay">
-        <canvas id="fireworks-canvas" class="fireworks-canvas" aria-hidden="true"></canvas>
         <div class="modal">
             <span class="big-emoji">🥰</span>
             <h2>我就知道你会答应！</h2>
@@ -329,6 +328,7 @@
             <button class="btn-close" id="modalClose">🌹 紧紧抱住你</button>
         </div>
     </div>
+    <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
     <script>
         // 称呼：优先读取网址里的 ?name=，其次本机保存的默认值，最后用页面默认
         (function () {
@@ -510,59 +510,118 @@
         console.log('🎋 七夕快乐！愿有情人终成眷属 🎋');
     </script>
     <script>
-        // 烟花特效：点「我愿意」后绽放，关闭弹窗后停止
+        // 满屏烟花特效：点「我愿意」后绽放，关闭弹窗后停止
         (function fireworks() {
             const overlay = document.getElementById('modalOverlay');
             const canvas = document.getElementById('fireworks-canvas');
-            if (!overlay || !canvas) return;
+            if (!overlay || !canvas || !canvas.getContext) return;
             const ctx = canvas.getContext('2d');
-            let w = 0, h = 0, running = false, rafId = null;
+            let W = 0, H = 0, running = false, rafId = null, frame = 0;
+            let waveTimer = null, ambientTimer = null;
             const rockets = [];
-            const particles = [];
+            const sparks = [];
 
             function resize() {
-                w = canvas.width = overlay.clientWidth;
-                h = canvas.height = overlay.clientHeight;
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
             }
             window.addEventListener('resize', resize);
             resize();
 
-            function launch() {
-                rockets.push({
-                    x: w * (0.12 + Math.random() * 0.76),
-                    y: h + 6,
-                    targetY: h * (0.12 + Math.random() * 0.32),
-                    speed: 9 + Math.random() * 5,
-                    hue: Math.floor(Math.random() * 360)
-                });
+            function rand(min, max) { return min + Math.random() * (max - min); }
+
+            function pickHue() {
+                const hues = [335, 285, 265, 210, 190, 45, 15, 130];
+                return hues[Math.floor(Math.random() * hues.length)];
+            }
+
+            function launch(x, targetY, hue) {
+                rockets.push({ x: x, y: H + 10, targetY: targetY, speed: 9 + Math.random() * 4, hue: hue });
             }
 
             function explode(x, y, hue) {
-                const count = 55 + Math.floor(Math.random() * 30);
-                for (let i = 0; i < count; i++) {
-                    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.15;
-                    const speed = 2 + Math.random() * 4.5;
-                    particles.push({
-                        x: x,
-                        y: y,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        life: 1,
-                        decay: 0.007 + Math.random() * 0.011,
-                        hue: hue + Math.floor(Math.random() * 50) - 25,
-                        size: 1.5 + Math.random() * 2
-                    });
+                const roll = Math.random();
+                if (roll < 0.34) circleBurst(x, y, hue);
+                else if (roll < 0.55) ringBurst(x, y, hue);
+                else if (roll < 0.72) crackleBurst(x, y, hue);
+                else if (roll < 0.86) heartBurst(x, y);
+                else doubleBurst(x, y, hue);
+            }
+
+            function push(s) { sparks.push(s); }
+
+            function circleBurst(x, y, hue) {
+                const n = 55 + Math.floor(Math.random() * 20);
+                const base = Math.random() * Math.PI * 2;
+                for (let i = 0; i < n; i++) {
+                    const a = base + (Math.PI * 2 * i) / n + rand(-0.12, 0.12);
+                    const sp = rand(2.2, 6.2);
+                    push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: rand(0.005, 0.011), hue: hue + rand(-30, 30), size: rand(1.6, 3.4), twinkle: false, drag: 0.983, grav: 0.05 });
                 }
             }
 
+            function ringBurst(x, y, hue) {
+                for (let i = 0; i < 72; i++) {
+                    const a = (Math.PI * 2 * i) / 72;
+                    push({ x: x, y: y, vx: Math.cos(a) * 4.4, vy: Math.sin(a) * 4.4, life: 1, decay: 0.006, hue: hue, size: 2.2, twinkle: false, drag: 0.985, grav: 0.02 });
+                }
+                for (let i = 0; i < 12; i++) {
+                    push({ x: x, y: y, vx: rand(-1.4, 1.4), vy: rand(-1.4, 1.4), life: 1, decay: 0.02, hue: 50, size: rand(0.8, 1.6), twinkle: true, drag: 0.92, grav: 0.01 });
+                }
+            }
+
+            function crackleBurst(x, y, hue) {
+                const n = 70;
+                const base = Math.random() * Math.PI * 2;
+                for (let i = 0; i < n; i++) {
+                    const a = base + (Math.PI * 2 * i) / n + rand(-0.3, 0.3);
+                    const sp = rand(2.5, 7);
+                    const tw = Math.random() < 0.3;
+                    push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: rand(0.011, 0.02), hue: tw ? 60 : hue + rand(-40, 40), size: tw ? rand(1, 1.6) : rand(1.5, 2.6), twinkle: tw, drag: 0.975, grav: 0.035 });
+                }
+            }
+
+            function heartBurst(x, y) {
+                const n = 40;
+                for (let i = 0; i < n; i++) {
+                    const a = (i / n) * Math.PI * 2;
+                    const hx = 16 * Math.pow(Math.sin(a), 3);
+                    const hy = -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a));
+                    const s = rand(0.6, 1.1);
+                    push({ x: x + hx * s, y: y + hy * s, vx: hx * 0.02, vy: hy * 0.02, life: 1, decay: 0.008, hue: 335 + rand(-15, 15), size: 2.6, twinkle: Math.random() < 0.25, drag: 0.96, grav: 0.03 });
+                }
+                for (let i = 0; i < 10; i++) {
+                    const a = Math.random() * Math.PI * 2;
+                    const r = rand(8, 22);
+                    push({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, vx: 0, vy: 0, life: 1, decay: 0.012, hue: 45, size: 1.4, twinkle: true, drag: 0.98, grav: 0 });
+                }
+            }
+
+            function doubleBurst(x, y, hue) {
+                circleBurst(x, y, hue);
+                setTimeout(function () {
+                    if (!running) return;
+                    circleBurst(x + rand(-40, 40), y + rand(-40, 40), pickHue());
+                }, 120);
+            }
+
             function step() {
-                ctx.clearRect(0, 0, w, h);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.globalAlpha = 1;
+                ctx.clearRect(0, 0, W, H);
+                ctx.globalCompositeOperation = 'lighter';
+
                 for (let i = rockets.length - 1; i >= 0; i--) {
                     const r = rockets[i];
-                    ctx.globalAlpha = 0.95;
-                    ctx.fillStyle = 'hsl(' + r.hue + ', 100%, 78%)';
+                    ctx.strokeStyle = 'hsla(' + r.hue + ', 100%, 75%, 0.9)';
+                    ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc(r.x, r.y, 2.2, 0, Math.PI * 2);
+                    ctx.moveTo(r.x, r.y);
+                    ctx.lineTo(r.x + rand(-1.5, 1.5), r.y + 18);
+                    ctx.stroke();
+                    ctx.fillStyle = 'hsl(' + r.hue + ', 100%, 85%)';
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
                     ctx.fill();
                     r.y -= r.speed;
                     if (r.y <= r.targetY) {
@@ -570,47 +629,86 @@
                         rockets.splice(i, 1);
                     }
                 }
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const p = particles[i];
+
+                for (let i = sparks.length - 1; i >= 0; i--) {
+                    const p = sparks[i];
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.vy += 0.045;
-                    p.vx *= 0.985;
-                    p.vy *= 0.985;
+                    p.vx *= p.drag;
+                    p.vy = p.vy * p.drag + p.grav;
                     p.life -= p.decay;
-                    if (p.life <= 0) { particles.splice(i, 1); continue; }
-                    ctx.globalAlpha = p.life;
-                    ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 65%)';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    if (p.life <= 0) { sparks.splice(i, 1); continue; }
+                    if (p.twinkle) {
+                        const flicker = 0.5 + 0.5 * Math.sin(frame * 0.25 + p.x * 0.1 + p.y * 0.1);
+                        ctx.globalAlpha = p.life * (0.45 + 0.55 * flicker);
+                        ctx.strokeStyle = 'hsl(' + p.hue + ', 100%, 85%)';
+                        ctx.lineWidth = 1.2;
+                        const s = p.size * 2.6;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x - s, p.y); ctx.lineTo(p.x + s, p.y);
+                        ctx.moveTo(p.x, p.y - s); ctx.lineTo(p.x, p.y + s);
+                        ctx.stroke();
+                    } else {
+                        ctx.globalAlpha = p.life * 0.9;
+                        ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 68%)';
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = p.life * 0.25;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
                 }
+
                 ctx.globalAlpha = 1;
+                frame++;
                 if (running) rafId = requestAnimationFrame(step);
+            }
+
+            function launchWave() {
+                const n = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < n; i++) {
+                    setTimeout(function () {
+                        if (!running) return;
+                        launch(rand(W * 0.08, W * 0.92), rand(H * 0.1, H * 0.38), pickHue());
+                    }, i * 120);
+                }
             }
 
             function start() {
                 if (running) return;
                 running = true;
                 resize();
-                let shots = 0;
-                const timer = setInterval(function () {
-                    launch();
-                    shots++;
-                    if (shots >= 6) clearInterval(timer);
-                }, 170);
+                frame = 0;
+                let waves = 0;
+                waveTimer = setInterval(function () {
+                    launchWave();
+                    waves++;
+                    if (waves >= 6) {
+                        clearInterval(waveTimer);
+                        waveTimer = null;
+                        ambientTimer = setInterval(function () {
+                            launchWave();
+                        }, 1300);
+                    }
+                }, 850);
                 step();
             }
 
             function stop() {
                 running = false;
                 if (rafId) cancelAnimationFrame(rafId);
+                if (waveTimer) clearInterval(waveTimer);
+                if (ambientTimer) clearInterval(ambientTimer);
+                waveTimer = null;
+                ambientTimer = null;
                 rockets.length = 0;
-                particles.length = 0;
-                ctx.clearRect(0, 0, w, h);
+                sparks.length = 0;
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.clearRect(0, 0, W, H);
             }
 
-            // 弹窗显示/隐藏时自动开始/停止
             const observer = new MutationObserver(function () {
                 if (overlay.classList.contains('show')) start();
                 else stop();

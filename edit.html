@@ -84,8 +84,8 @@
         <h1>✎ 换个称呼</h1>
         <p class="sub">改一个名字，生成一条专属链接</p>
         <label for="name">称呼（会显示在信的开头）</label>
-        <input type="text" id="name" maxlength="20" placeholder="例如：张勤" />
-        <div class="preview">亲爱的 <strong id="preview">张勤</strong> ：今夜银河倾泻…</div>
+        <input type="text" id="name" maxlength="20" placeholder="例如：张三" />
+        <div class="preview">亲爱的 <strong id="preview">张三</strong> ：今夜银河倾泻…</div>
         <div class="row">
             <button id="gen">生成链接</button>
             <button class="ghost" id="copy">复制链接</button>
@@ -110,7 +110,7 @@
             const pathLink = document.getElementById('pathLink');
             function current() {
                 const v = el.value.trim();
-                return v || '张勤';
+                return v || '张三';
             }
             el.addEventListener('input', function () {
                 preview.textContent = current();
